@@ -16,7 +16,7 @@ certificate (issuer EC-Ciutadania, from the Windows store). No DNIe or FNMT avai
 | 2 | XAdES verification in Python | **Works with 2 workarounds** (library incompatibilities, below) |
 | 3 | Certificate validation | **Works** for idCAT: chain to EC-ACC, live OCSP (`require` mode), policy, QcType, NIF. Rejections tested with synthetic certs. NIF for DNIe/FNMT **unverified** |
 | 4 | Integrity of the node | **Works** (byte-identical canonical form of the node; signed-node == stored-node) |
-| 5 | Real certificates | idCAT only |
+| 5 | Real certificates | idCAT (accepted) and FNMT representative (rejected as expected). DNIe and FNMT natural person: none |
 | 6 | Mobile | Not attempted (optional) |
 | 7 | Resources | Negligible CPU; no Docker on this machine, no VPS test |
 
@@ -89,6 +89,19 @@ digest, `QualifyingProperties/@Target`, single signature, single `avalcandidatur
   organization/organizationIdentifier.
 - **NIF location, idCAT:** subject `serialNumber` = `IDCES-<NIF>`. For DNIe, FNMT and the rest this is
   **unverified**: no certificate available. Do not assume the same layout.
+- **FNMT representative certificate (real, owner's):** the full pipeline ran on it. Signature, XAdES and chain are
+  valid (AC Representación -> AC RAIZ FNMT-RCM, live OCSP at `ocsprep.cert.fnmt.es`; the root's SHA-1 matches the
+  Windows store; the root expires 2030-01-01). What it shows about the FNMT layout:
+  - subject `serialNumber` = `IDCES-<NIF of the representative>`, i.e. **the same NIF layout as idCAT, and
+    QcType `esign` too: a representative certificate looks like a natural person at first sight.**
+  - It is told apart by `organizationName`, `organizationIdentifier` (2.5.4.97 = `VATES-<CIF>`), the registry
+    description attribute (2.5.4.13), the FNMT SAN attributes (1.3.6.1.4.1.5734.1.x) and the policy OID
+    `1.3.6.1.4.1.5734.3.11.1` ("representante de p. jurídica"). keyUsage also includes keyEncipherment.
+  - Outcome: rejected, because AC Representación has no profile in the curated list. A test also proves that
+    even if that issuer were admitted, the organization attributes and the unaccepted policy reject it.
+  - The natural-person FNMT policy OID and issuer (AC FNMT Usuarios) are **not verified**: no certificate.
+  - An early bug surfaced here: an unknown issuer made the pipeline raise (HTTP 500). Now any unexpected error
+    becomes a rejection.
 - Rejections verified with synthetic certificates (`poc/tests`): expired, revoked (CRL), seal (QcType `eseal` and
   organizationIdentifier), legal person / representative (organization attributes), unaccepted policy, missing
   nonRepudiation, no revocation endpoint, unknown issuer. Real revoked/expired certificates were not tested.
@@ -118,7 +131,7 @@ example uses SHA-1 (acceptance of SHA-256/512 by the Oficina del Censo unverifie
 
 - Firefox and Chrome on macOS, Safari: signature flow, `frame-src afirma:`, WebSocket certificate trust (day 2).
 - Verify the production CSP decision about `style-src` (above).
-- DNIe, FNMT: NIF extraction and policy OIDs (needs certificates; the owner has none for the PoC).
+- DNIe and FNMT natural person: NIF extraction and policy OIDs (needs certificates).
 - Mobile storage/retrieve servers (optional, not attempted).
 - Docker/VPS resource test.
 - Check the curated roots' fingerprints against official sources; verify the idCAT root fetched over HTTP.

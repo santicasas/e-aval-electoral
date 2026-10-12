@@ -173,3 +173,32 @@ def test_unknown_issuer_rejected(pki):
         assert "no profile" in " ".join(checks.classify_certificate(ee)["problems"])
     finally:
         checks.PROFILES.update(saved)
+
+
+# ---- real representative certificate (FNMT) -----------------------------------------------------------------
+
+def _signed_by(issuer_cn):
+    for f in SIGNED:
+        root = etree.parse(f).getroot()
+        cert = x509.load_der_x509_certificate(base64.b64decode(root.find(f".//{DS}X509Certificate").text))
+        if issuer_cn in cert.issuer.rfc4514_string():
+            return Path(f).read_bytes(), cert
+    return None, None
+
+
+def test_real_fnmt_representative_rejected_even_if_issuer_were_admitted():
+    """The representative certificate has serialNumber IDCES-<NIF> and QcType esign, like a natural person:
+    only the organization attributes and the policy tell them apart."""
+    signed, cert = _signed_by("AC Representaci")
+    if cert is None:
+        pytest.skip("needs a signature made with an FNMT representative certificate")
+    import re
+    checks.PROFILES["AC Representación"] = {"policies": {"1.3.6.1.4.1.5734.3.10.1"},  # hypothetical natural-person OID
+                                            "nif_regex": re.compile(r"^IDCES-([0-9A-Z]{9})$")}
+    try:
+        cls = checks.classify_certificate(cert)
+    finally:
+        del checks.PROFILES["AC Representación"]
+    assert cls["nif_found"] and cls["qc_types"] == ["esign"]  # looks like a natural person at first sight
+    assert any("legal person" in p for p in cls["problems"])
+    assert any("policy" in p for p in cls["problems"])

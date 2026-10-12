@@ -18,6 +18,8 @@ NS = {
 
 
 def mask(text: str) -> str:
+    text = re.sub(r"(O=|2\.5\.4\.97=|2\.5\.4\.13=|1\.3\.6\.1\.4\.1\.5734\.1\.[0-9]=)[^,]*", r"<MASKED>", text)
+    text = re.sub(r"[A-Z]{5}[A-Z]{2}-[0-9A-Z]+|VATES-[0-9A-Z]+", "<ORG-ID>", text)
     text = re.sub(r"(CN=|givenName=|surname=|2\.5\.4\.42=|2\.5\.4\.4=)[^,]*", r"\1<NAME>", text)
     text = re.sub(r"\b[0-9XYZxyz][0-9]{7}[A-Za-z]\b", "<NIF>", text)
     text = re.sub(r"\b[0-9]{8}[A-Za-z]\b", "<NIF>", text)
@@ -49,7 +51,7 @@ def main(path: str) -> None:
     cert = x509.load_der_x509_certificate(base64.b64decode(certs[0]))
     print("subject:", mask(cert.subject.rfc4514_string()))
     for attr in cert.subject:
-        is_name = attr.oid._name in ("commonName", "givenName", "surname")
+        is_name = attr.oid._name in ("commonName", "givenName", "surname", "organizationName") or attr.oid.dotted_string in ("2.5.4.97", "2.5.4.13")
         print("   ", attr.oid.dotted_string, attr.oid._name, "=", "<NAME>" if is_name else mask(str(attr.value)))
     print("issuer:", cert.issuer.rfc4514_string())
     print("validity:", cert.not_valid_before_utc, "->", cert.not_valid_after_utc)

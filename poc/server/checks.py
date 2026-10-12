@@ -116,6 +116,7 @@ def classify_certificate(cert: x509.Certificate) -> dict:
     out = {"issuer_cn": issuer_cn, "known_profile": profile is not None, "problems": []}
     if profile is None:
         out["problems"].append("issuer has no profile in the curated list")
+        out["nif"] = None
         return out
     policies = {p.policy_identifier.dotted_string for p in cert.extensions.get_extension_for_class(
         x509.CertificatePolicies).value}
@@ -246,6 +247,14 @@ async def check_certificate(cert_der: bytes, roots=None, inters=None, crls=None,
 
 
 async def run_checks(original: bytes, signed: bytes) -> dict:
+    """Run every check; any unexpected error becomes a rejection, never an exception."""
+    try:
+        return await _run_checks(original, signed)
+    except Exception as exc:  # noqa: BLE001
+        return {"accepted": False, "checks": {"internal": {"ok": False, "detail": f"{type(exc).__name__}: {str(exc)[:200]}"}}}
+
+
+async def _run_checks(original: bytes, signed: bytes) -> dict:
     report: dict = {"checks": {}}
     c = report["checks"]
     if len(signed) > MAX_BYTES:
@@ -270,7 +279,7 @@ async def run_checks(original: bytes, signed: bytes) -> dict:
         c["certificate_chain"] = await check_certificate(cert_der)
         cert = x509.load_der_x509_certificate(cert_der)
         cls = classify_certificate(cert)
-        nif = cls.pop("nif")
+        nif = cls.pop("nif", None)
         xml_id = root.findtext("avalcandidatura/avalista/id")
         cls["nif_matches_xml_id"] = bool(nif) and nif == (xml_id or "").upper()
         if not cls["nif_matches_xml_id"]:
