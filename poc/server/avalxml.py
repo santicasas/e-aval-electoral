@@ -4,6 +4,8 @@ Throwaway code (Phase 0). Not part of the platform.
 """
 from __future__ import annotations
 
+import copy
+
 from pathlib import Path
 
 from lxml import etree
@@ -43,7 +45,7 @@ def normalized_node_c14n(xml: bytes) -> bytes:
     """C14N of avalcandidatura with signer-added attributes removed and Signature siblings ignored."""
     parser = etree.XMLParser(resolve_entities=False, no_network=True, huge_tree=False)
     root = etree.fromstring(xml, parser)
-    node = etree.fromstring(etree.tostring(_find_node(root)), parser)
+    node = copy.deepcopy(_find_node(root))
     for attr in SIGNER_ADDED_ATTRS:
         node.attrib.pop(attr, None)
     return etree.tostring(node, method="c14n")

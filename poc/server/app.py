@@ -117,13 +117,13 @@ class SignedIn(BaseModel):
 
 
 @app.post("/api/aval/{aval_id}/signed")
-def receive_signed(aval_id: str, body: SignedIn):
+async def receive_signed(aval_id: str, body: SignedIn):
     entry = STORE.get(aval_id)
     if entry is None:
         raise HTTPException(404, "unknown aval")
     signed = base64.b64decode(body.xml_b64)
     (PRIVATE / "signed" / f"{aval_id}.signed.xml").write_bytes(signed)
-    return run_checks(entry["xml"], signed)
+    return await run_checks(entry["xml"], signed)
 
 
 app.mount("/", StaticFiles(directory=WEB, html=True), name="web")

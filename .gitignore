@@ -33,3 +33,7 @@ __pycache__/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Public CA certificates of the curated trust list are allowed (never put personal certificates there).
+!poc/trust/**/*.crt
+!trust/**/*.crt
