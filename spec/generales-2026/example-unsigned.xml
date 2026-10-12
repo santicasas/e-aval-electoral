@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<oce>
+  <avalcandidatura>
+    <avalista>
+      <nomb>NOM DE PROVA</nomb>
+      <ape1>COGNOM</ape1>
+      <ape2>SEGON COGNOM</ape2>
+      <fnac>19800101</fnac>
+      <tipoid>1</tipoid>
+      <id>00000000T</id>
+    </avalista>
+    <candidatura>
+      <elecciones>CONGRESO</elecciones>
+      <circunscripcion>Barcelona</circunscripcion>
+      <nombre>Candidatura de prova</nombre>
+    </candidatura>
+  </avalcandidatura>
+</oce>
