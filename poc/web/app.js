@@ -5,6 +5,16 @@ function log(msg) {
   logEl.textContent += new Date().toISOString().slice(11, 23) + " " + msg + "\n";
 }
 
+// PoC only: mirror AutoScript's console output (it logs the afirma:// URL it opens on mobile) into the page log,
+// because a phone has no easy console. Session keys in that URL are throwaway.
+for (const level of ["log", "warn", "error"]) {
+  const original = console[level].bind(console);
+  console[level] = (...args) => {
+    log("console." + level + ": " + args.map(String).join(" ").slice(0, 600));
+    original(...args);
+  };
+}
+
 // Report any CSP violation so the PoC can document what AutoScript needs.
 document.addEventListener("securitypolicyviolation", (e) => {
   log("CSP VIOLATION: " + e.violatedDirective + " blocked " + (e.blockedURI || "inline"));
