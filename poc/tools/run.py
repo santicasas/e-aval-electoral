@@ -64,6 +64,7 @@ if __name__ == "__main__":
                     help="address to bind; use your Tailscale IP to reach the PoC from a phone, never 0.0.0.0")
     ap.add_argument("--cert", help="TLS certificate (PEM); default: the local self-signed one")
     ap.add_argument("--key", help="TLS private key (PEM)")
+    ap.add_argument("--log-level", default="info", help="uvicorn log level; debug also shows TLS handshake failures")
     args = ap.parse_args()
     cert, key = (Path(args.cert), Path(args.key)) if args.cert and args.key else ensure_cert()
     subprocess.run(
@@ -71,7 +72,7 @@ if __name__ == "__main__":
             sys.executable, "-m", "uvicorn", "--app-dir", str(POC), "server.app:app",
             "--host", args.host, "--port", args.port,
             "--ssl-certfile", str(cert), "--ssl-keyfile", str(key),
-            "--no-server-header",
+            "--no-server-header", "--log-level", args.log_level,
         ],
         check=True,
     )
