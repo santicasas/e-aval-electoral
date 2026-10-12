@@ -45,6 +45,17 @@ format `XAdES`.
   or patch the vendored script, or replace its dialogs with our own UI. **Owner decision.**
   Not yet tested: `frame-src afirma:` (Firefox/Safari open AutoFirma through an iframe; Chrome navigates),
   and the iframe's `style` attribute (`style-src-attr`).
+- **Firefox 140.0.4 / Windows (2026-10-12 09:08):** works. AutoFirma opened (iframe path), the signature came back
+  and the server verified it (signature, XAdES, chain, live OCSP all OK; signed with the FNMT representative
+  certificate, so the final verdict was a rejection by profile, as intended). **No `frame-src` violation:
+  `frame-src afirma:` is sufficient.** Two CSP violations, both from AutoScript, neither blocking the flow:
+  `style-src-elem` (injected `<style>` for the dialogs) and `style-src-attr` (the hidden iframe's `style`
+  attribute). Chrome shows only the first.
+- **CSP options for styles** (owner decision pending): (a) `style-src 'self' 'unsafe-inline'` on the signature
+  page only: the risk is low while `script-src 'self'` holds and there is no inline script; (b) patch the vendored
+  script (nonce on the injected style, class instead of the style attribute) at the cost of maintaining a fork;
+  (c) our own error UI and disabling the dialogs. Suggestion for 16–17 Oct: (a), revisit with (b) after the
+  election.
 - AutoScript uses `wss://127.0.0.1` on desktop browsers that support WebSocket and falls back to the
   intermediate servers only for iOS/Android, forced mode, or Safari 10. So **modern Safari is expected to use
   the WebSocket path**; to be confirmed on macOS.
@@ -129,7 +140,7 @@ example uses SHA-1 (acceptance of SHA-256/512 by the Oficina del Censo unverifie
 
 ## Pending
 
-- Firefox and Chrome on macOS, Safari: signature flow, `frame-src afirma:`, WebSocket certificate trust (day 2).
+- Chrome, Firefox and Safari on macOS: signature flow, WebSocket certificate trust (day 2). Firefox/Windows done.
 - Verify the production CSP decision about `style-src` (above).
 - DNIe and FNMT natural person: NIF extraction and policy OIDs (needs certificates).
 - Mobile storage/retrieve servers (optional, not attempted).
