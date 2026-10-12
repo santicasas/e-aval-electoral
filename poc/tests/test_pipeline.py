@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import synth  # noqa: E402
 from server import avalxml, checks  # noqa: E402
-from server.checks import DS  # noqa: E402
+from server.checks import DS, XADES  # noqa: E402
 
 SIGNED = sorted(glob.glob(str(POC / "private" / "signed" / "*.signed.xml")))
 real = pytest.mark.skipif(not SIGNED, reason="needs a real AutoFirma-signed aval in poc/private/signed/")
@@ -71,7 +71,7 @@ def test_real_full_pipeline_accepts():
 
 @real
 @pytest.mark.parametrize("path,new", [("avalista/id", "11111111H"), ("candidatura/nombre", "Other Candidacy"),
-                                       ("candidatura/circunscripción", "Madrid")])
+                                       ("candidatura/circunscripcion", "Madrid")])
 def test_real_tampered_node_rejected(path, new):
     signed = load_signed()
     root = etree.fromstring(signed)
@@ -222,3 +222,22 @@ def test_security_headers():
     assert "max-age" in r.headers["strict-transport-security"]
     assert "server" not in r.headers
     assert c.get("/api/defaults").headers["cache-control"] == "no-store"
+
+
+@real
+def test_real_signature_shape_matches_boe_pattern():
+    """Signature parameters test: Id on the node, URI=#Id, single inclusive C14N transform (no enveloped, no
+    XPath), SHA-256 or stronger everywhere, Signature as sibling of avalcandidatura, XAdES 1.3.2."""
+    root = etree.fromstring(load_signed())
+    node = root.find("avalcandidatura")
+    sig = root.find(f"{DS}Signature")
+    assert [etree.QName(c).localname for c in root] == ["avalcandidatura", "Signature"]
+    ref = sig.find(f"{DS}SignedInfo/{DS}Reference")
+    assert ref.get("URI") == "#" + node.get("Id")
+    assert [t.get("Algorithm") for t in ref.iter(f"{DS}Transform")] == [
+        "http://www.w3.org/TR/2001/REC-xml-c14n-20010315"]
+    for r in sig.iter(f"{DS}DigestMethod"):
+        assert r.get("Algorithm").rsplit("#", 1)[1] in ("sha256", "sha384", "sha512")
+    assert sig.find(f"{DS}SignedInfo/{DS}SignatureMethod").get("Algorithm").endswith("rsa-sha256")
+    assert sig.find(f".//{XADES}QualifyingProperties") is not None
+    assert sig.find(f".//{XADES}DataObjectFormat/{XADES}MimeType").text == "text/xml"

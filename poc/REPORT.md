@@ -22,6 +22,18 @@ certificate (issuer EC-Ciutadania, from the Windows store). No DNIe or FNMT avai
 
 ## 1. Signature from the static page
 
+**Recommended parameters (variant C, verified 2026-10-12 09:14 on Chrome/Windows, idCAT, `accepted: true`):**
+`format=XAdES Enveloped`, `nodeToSign=<Id of the node>`, `insertEnvelopedSignatureOnNodeByXPath=/oce`,
+`includeOnlySignningCertificate=true`, `avoidEnvelopedTransformWhenSigningNode=true`,
+`avoidXpathExtraTransformsOnEnveloped=true`, `referencesDigestMethod=http://www.w3.org/2001/04/xmlenc#sha256`,
+algorithm `SHA256withRSA`, format `XAdES`. This reproduces the shape of the BOE example: `Id` on the node,
+`URI="#<Id>"`, a **single C14N transform** (no enveloped, no XPath), **SHA-256 digests** on all three
+references and on the `SigningCertificate`, `ds:Signature` as sibling of `avalcandidatura`. With C, the XPath
+transform and its redundant `xmlns:ds` are gone, so **plain SignXML verifies the signature**; the only remaining
+workaround is `validate_schema=False` (39-digit serial number). The namespace rebuild (`strip_redundant_ns`) and
+the unicode `_tostring` are no longer needed with the official, unaccented XSD, and are kept only as a
+defensive fallback. (`nodeToSign=avalcandidatura` without an `Id` still fails.)
+
 **End-to-end live run (Chrome 154/Windows, 2026-10-12 09:02):** page -> server-generated XML -> AutoFirma
 (certificate from the Windows store) -> server: all checks passed (`accepted: true`), SigningTime skew 0 s,
 live OCSP in `require` mode. Variant A failed again with the same error, confirming the `Id` requirement.
