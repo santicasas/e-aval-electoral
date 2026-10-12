@@ -29,14 +29,16 @@ CSP_MODES = {
         "connect-src 'self' wss://127.0.0.1:*; frame-src afirma:; form-action 'none'; "
         "base-uri 'none'; object-src 'none'; frame-ancestors 'none'"
     ),
-    # Experiment: allow inline styles (AutoScript injects a <style> and style attributes).
+    # Chosen for the signature page: allow inline styles only (AutoScript injects a <style> and style attributes).
     "style-inline": (
         "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
         "connect-src 'self' wss://127.0.0.1:*; frame-src afirma:; form-action 'none'; "
         "base-uri 'none'; object-src 'none'; frame-ancestors 'none'"
     ),
 }
-CSP = CSP_MODES[os.environ.get("POC_CSP_MODE", "strict")]
+# Owner decision 2026-10-12 (ADR 0009): the signature page allows inline styles because AutoScript injects a
+# <style> and style attributes; script-src stays strictly 'self'. "strict" is kept for comparison tests.
+CSP = CSP_MODES[os.environ.get("POC_CSP_MODE", "style-inline")]
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 STORE: dict[str, dict] = {}

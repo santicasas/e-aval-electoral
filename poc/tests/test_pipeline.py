@@ -202,3 +202,23 @@ def test_real_fnmt_representative_rejected_even_if_issuer_were_admitted():
     assert cls["nif_found"] and cls["qc_types"] == ["esign"]  # looks like a natural person at first sight
     assert any("legal person" in p for p in cls["problems"])
     assert any("policy" in p for p in cls["problems"])
+
+
+# ---- security headers ------------------------------------------------------------------------------------------
+
+def test_security_headers():
+    from fastapi.testclient import TestClient
+    from server.app import app
+
+    c = TestClient(app)
+    r = c.get("/")
+    csp = r.headers["content-security-policy"]
+    assert "script-src 'self';" in csp and "frame-ancestors 'none'" in csp and "frame-src afirma:" in csp
+    assert "default-src 'none'" in csp and "object-src 'none'" in csp
+    assert "script-src 'self' 'unsafe" not in csp
+    assert r.headers["x-frame-options"] == "DENY"
+    assert r.headers["x-content-type-options"] == "nosniff"
+    assert r.headers["referrer-policy"] == "no-referrer"
+    assert "max-age" in r.headers["strict-transport-security"]
+    assert "server" not in r.headers
+    assert c.get("/api/defaults").headers["cache-control"] == "no-store"

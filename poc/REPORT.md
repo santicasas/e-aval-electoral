@@ -51,7 +51,7 @@ format `XAdES`.
   `frame-src afirma:` is sufficient.** Two CSP violations, both from AutoScript, neither blocking the flow:
   `style-src-elem` (injected `<style>` for the dialogs) and `style-src-attr` (the hidden iframe's `style`
   attribute). Chrome shows only the first.
-- **CSP options for styles** (owner decision pending): (a) `style-src 'self' 'unsafe-inline'` on the signature
+- **CSP options for styles** (**decided 2026-10-12: option (a), ADR 0009**): (a) `style-src 'self' 'unsafe-inline'` on the signature
   page only: the risk is low while `script-src 'self'` holds and there is no inline script; (b) patch the vendored
   script (nonce on the injected style, class instead of the style attribute) at the cost of maintaining a fork;
   (c) our own error UI and disabling the dialogs. Suggestion for 16–17 Oct: (a), revisit with (b) after the

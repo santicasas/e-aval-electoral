@@ -84,7 +84,7 @@ Instrucción 7/2011 JEC (BOE-A-2011-14814): Congreso, Senado, Parlamento Europeo
 SHA-256 or stronger, `includeOnlySignningCertificate=true`. Never sign the whole document instead of the node.
 
 ### Browser hardening
-Strict CSP with own resources only, `frame-ancestors 'none'`, `connect-src` limited to the backend and
+Strict CSP with own resources only (the signature page additionally allows inline styles, ADR 0009), `frame-ancestors 'none'`, `connect-src` limited to the backend and
 AutoFirma's local socket, `frame-src afirma:`, `X-Frame-Options: DENY`, `nosniff`,
 `Referrer-Policy: no-referrer`, HSTS, `Cache-Control: no-store` on data responses, no server version
 exposure. No analytics, external translators, Google Fonts or CDNs on aval pages. No non-essential cookies.
