@@ -4192,7 +4192,7 @@ var AutoScript = ( function ( window, undefined ) {
 			var PROTOCOL_VERSION = 4;
 			
 			/* Longitud maxima que generalmente se permite a una URL. */
-			var MAX_LONG_GENERAL_URL = 0; // DEBUG EXPERIMENT: always upload data to the intermediate server
+			var MAX_LONG_GENERAL_URL = 1000; // DEBUG EXPERIMENT: upload to the intermediate server when the direct URL is over 1000 chars (the URL without data must stay under it)
 			
 			/** Tiempo de espera entre intentos de obtener el resultado de la operacion. */
 			var WAITING_CYCLE_MILLIS = Platform.isAndroid() || Platform.isIOS() ? 4000 : 3000;
