@@ -1,0 +1,15 @@
+pyproject.toml
+src/eaval/__init__.py
+src/eaval/avalxml.py
+src/eaval/config.py
+src/eaval/constituencies.py
+src/eaval/errors.py
+src/eaval/normalize.py
+src/eaval/prepare.py
+src/eaval/schema.py
+src/eaval/zipexport.py
+src/eaval.egg-info/PKG-INFO
+src/eaval.egg-info/SOURCES.txt
+src/eaval.egg-info/dependency_links.txt
+src/eaval.egg-info/requires.txt
+src/eaval.egg-info/top_level.txt
