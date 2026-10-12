@@ -41,4 +41,5 @@ Thumbs.db
 *.egg-info/
 
 # Private working documents (outreach drafts, candidacy-specific material). Never replicated to GitHub.
+private-docs
 private-docs/
