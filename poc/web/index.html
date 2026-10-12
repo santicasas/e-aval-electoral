@@ -28,8 +28,8 @@
       <label>Candidacy name (max 100) <input name="nombre" required maxlength="100" value="Example Candidacy"></label>
       <label>Parameter variant
         <select name="variant">
-          <option value="A">A: nodeToSign=avalcandidatura (no Id from server)</option>
-          <option value="B">B: server Id on node, nodeToSign=Id</option>
+          <option value="B" selected>B: server Id on node, nodeToSign=Id (works)</option>
+          <option value="A">A: nodeToSign=avalcandidatura, no Id (fails: java.lang.Exception)</option>
         </select>
       </label>
       <button type="submit">Generate and sign with AutoFirma</button>
