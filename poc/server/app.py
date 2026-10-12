@@ -16,6 +16,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from . import avalxml
+from .intermediate import Store, make_router
 from .checks import run_checks
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -52,7 +53,7 @@ async def security_headers(request: Request, call_next):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["Referrer-Policy"] = "no-referrer"
     response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-    if request.url.path.startswith("/api/"):
+    if request.url.path.startswith(("/api/", "/afirma-signature-")):
         response.headers["Cache-Control"] = "no-store"
     if "server" in response.headers:
         del response.headers["server"]
@@ -149,5 +150,9 @@ async def receive_signed(aval_id: str, body: SignedIn):
     (PRIVATE / "signed" / f"{aval_id}.signed.xml").write_bytes(signed)
     return await run_checks(entry["xml"], signed)
 
+
+# Intermediate storage/retrieve services for mobile signing (AutoScript looks for them at these paths, same origin).
+INTERMEDIATE = Store()
+app.include_router(make_router(INTERMEDIATE))
 
 app.mount("/", StaticFiles(directory=WEB, html=True), name="web")

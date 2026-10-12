@@ -1,6 +1,6 @@
 """Run the PoC over HTTPS on https://localhost:8443 (self-signed dev certificate, generated on first run).
 
-Usage (same on Windows and macOS):  python poc/tools/run.py
+Usage (same on Windows and macOS):  python poc/tools/run.py [port] [--host IP] [--cert C --key K]
 The certificate and key go to poc/private/dev-tls/, which is git-ignored.
 """
 from __future__ import annotations
@@ -56,12 +56,20 @@ def ensure_cert() -> tuple[Path, Path]:
 
 
 if __name__ == "__main__":
-    cert, key = ensure_cert()
-    port = sys.argv[1] if len(sys.argv) > 1 else "8443"
+    import argparse
+
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("port", nargs="?", default="8443")
+    ap.add_argument("--host", default="127.0.0.1",
+                    help="address to bind; use your Tailscale IP to reach the PoC from a phone, never 0.0.0.0")
+    ap.add_argument("--cert", help="TLS certificate (PEM); default: the local self-signed one")
+    ap.add_argument("--key", help="TLS private key (PEM)")
+    args = ap.parse_args()
+    cert, key = (Path(args.cert), Path(args.key)) if args.cert and args.key else ensure_cert()
     subprocess.run(
         [
             sys.executable, "-m", "uvicorn", "--app-dir", str(POC), "server.app:app",
-            "--host", "127.0.0.1", "--port", port,
+            "--host", args.host, "--port", args.port,
             "--ssl-certfile", str(cert), "--ssl-keyfile", str(key),
             "--no-server-header",
         ],
