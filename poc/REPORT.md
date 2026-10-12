@@ -22,6 +22,10 @@ certificate (issuer EC-Ciutadania, from the Windows store). No DNIe or FNMT avai
 
 ## 1. Signature from the static page
 
+**End-to-end live run (Chrome 154/Windows, 2026-10-12 09:02):** page -> server-generated XML -> AutoFirma
+(certificate from the Windows store) -> server: all checks passed (`accepted: true`), SigningTime skew 0 s,
+live OCSP in `require` mode. Variant A failed again with the same error, confirming the `Id` requirement.
+
 Parameters that work (variant B): `format=XAdES Enveloped`, `nodeToSign=<Id of the node>`,
 `insertEnvelopedSignatureOnNodeByXPath=/oce`, `includeOnlySignningCertificate=true`, algorithm `SHA256withRSA`,
 format `XAdES`.
