@@ -1,6 +1,8 @@
 # 0001 — Python backend, no Java
 
-Status: Proposed — pending Phase 0 PoC results.
+Status: Accepted (owner, 2026-10-12, option A of `poc/REPORT.md`): continue with the Python stack proven in the PoC.
+Conditions kept open: verify DNIe and FNMT natural-person certificates, trust-list fingerprints against official
+sources, and the Junta's answers (see the report, sections 2, 6 and 10).
 
 ## Context
 Validating AutoFirma's XAdES output and the certificate chain is usually done with Java (DSS, @firma). We

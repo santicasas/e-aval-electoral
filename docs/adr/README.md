@@ -4,7 +4,7 @@ One file per decision. Status: Proposed, Accepted, Superseded.
 
 | # | Decision | Status |
 |---|----------|--------|
-| 0001 | Python backend, no Java | Proposed (pending PoC) |
+| 0001 | Python backend, no Java | Accepted (PoC option A) |
 | 0002 | Single-phase signature | Accepted |
 | 0003 | Server-side timestamp, no TSA | Accepted (Junta acceptance unverified) |
 | 0004 | Curated root CA list | Accepted |

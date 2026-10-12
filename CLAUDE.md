@@ -19,20 +19,14 @@ commit messages: English. README: English, Catalan, Spanish.
   configuration lives outside the repo (private deployment config / secrets). Use neutral placeholders
   such as "Example Candidacy" in docs, fixtures and tests.
 
-## Phase 0 — PoC (current phase)
-Two days max, throwaway code in `poc/`. **Do not write platform code until the owner reads the PoC report
-(`poc/REPORT.md`) and decides.** The Python-vs-DSS/@firma-trifasic decision is the owner's, not ours: present
-results and options only.
-
-PoC scope: (1) static page -> AutoFirma (AutoScript, local WebSocket), XAdES enveloped over `avalcandidatura`,
-under the production CSP; (2) verify AutoFirma's XAdES in Python (SignXML or equivalent); (3) certificate
-validation with pyhanko-certvalidator (curated root, validity, OCSP/CRL, NIF extraction, reject seals /
-legal-person / representative certs); (4) integrity: server-generated node == signed node; (5) real
-certificates; (6) mobile storage/retrieve servers (optional); (7) resource usage on a small VPS.
-
-PoC test material: the owner's **software idCAT certificate only**. DNIe and FNMT are NOT available, so NIF
-extraction for those issuers stays unverified and must be reported as such. Rejection cases (revoked, expired,
-seal, legal person) need synthetic certificates generated in-test.
+## Phase status
+- **Phase 0 (PoC) is closed.** Report and recommendation: `poc/REPORT.md`. The owner chose **option A: continue with
+  Python** (ADR 0001). PoC code in `poc/` is throwaway; the production-oriented core is `backend/` (library `eaval`).
+- **Phase 1 (current):** build the platform for 16–17 Oct following the plan in the report, section 3. Open
+  conditions: DNIe and FNMT natural-person verification, trust-list fingerprints against official sources, answers
+  from the Junta Electoral (report, section 10). Mobile is out of scope for the 29N (it needs a three-phase server).
+- Real test certificates: the owner's idCAT, an FNMT representative and an expired FNMT natural-person certificate;
+  none ever goes into the repository.
 
 ## Regulatory frame
 Instrucción 7/2011 JEC (BOE-A-2011-14814): Congreso, Senado, Parlamento Europeo.
