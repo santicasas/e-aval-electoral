@@ -13,10 +13,10 @@ from lxml import etree
 DSIG_NS = "http://www.w3.org/2000/09/xmldsig#"
 # Attributes the AutoFirma XAdES signer adds to the signed node (see BOE example, image 14814_006).
 SIGNER_ADDED_ATTRS = ("Id", "MimeType", "Encoding")
-XSD_PATH = Path(__file__).resolve().parent.parent / "spec-draft" / "oce.UNVERIFIED.xsd"
+XSD_PATH = Path(__file__).resolve().parents[2] / "spec" / "generales-2026" / "aval-jec-2011.xsd"
 
 FIELDS_AVALISTA = ("nomb", "ape1", "ape2", "fnac", "tipoid", "id")
-FIELDS_CANDIDATURA = ("elecciones", "circunscripción", "nombre")
+FIELDS_CANDIDATURA = ("elecciones", "circunscripcion", "nombre")
 
 
 def build_unsigned(data: dict, node_id: str | None = None) -> bytes:

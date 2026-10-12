@@ -28,7 +28,8 @@
       <label>Candidacy name (max 100) <input name="nombre" required maxlength="100" value="Example Candidacy"></label>
       <label>Parameter variant
         <select name="variant">
-          <option value="B" selected>B: server Id on node, nodeToSign=Id (works)</option>
+          <option value="C" selected>C: B + avoid enveloped/xpath transforms + SHA-256 digests</option>
+          <option value="B">B: server Id on node, nodeToSign=Id (works)</option>
           <option value="A">A: nodeToSign=avalcandidatura, no Id (fails: java.lang.Exception)</option>
         </select>
       </label>

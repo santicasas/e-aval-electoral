@@ -72,17 +72,24 @@ class AvalIn(BaseModel):
 
 
 # AutoFirma extra parameters under test. Variant A: signer picks the node by name (no Id from the server).
-# Variant B: the server puts an Id on the node and nodeToSign refers to that Id.
+# Variant B: the server puts an Id on the node and nodeToSign refers to that Id (the only one that works).
+# Variant C: B plus the extra parameters that should reproduce the BOE example's signature shape.
 def sign_params(variant: str, node_id: str | None) -> str:
-    node = node_id if variant == "B" else "avalcandidatura"
-    return "\n".join(
-        [
-            "format=XAdES Enveloped",
-            f"nodeToSign={node}",
-            "insertEnvelopedSignatureOnNodeByXPath=/oce",
-            "includeOnlySignningCertificate=true",
+    node = node_id if variant in ("B", "C") else "avalcandidatura"
+    params = [
+        "format=XAdES Enveloped",
+        f"nodeToSign={node}",
+        "insertEnvelopedSignatureOnNodeByXPath=/oce",
+        "includeOnlySignningCertificate=true",
+    ]
+    if variant == "C":
+        # Pattern of the BOE example / other platforms: single C14N transform, SHA-256 digests.
+        params += [
+            "avoidEnvelopedTransformWhenSigningNode=true",
+            "avoidXpathExtraTransformsOnEnveloped=true",
+            "referencesDigestMethod=http://www.w3.org/2001/04/xmlenc#sha256",
         ]
-    )
+    return "\n".join(params)
 
 
 EXAMPLE_DEFAULTS = {
@@ -112,12 +119,11 @@ def circunscripciones():
 
 @app.post("/api/aval")
 def create_aval(body: AvalIn, variant: str = "A"):
-    if variant not in ("A", "B"):
-        raise HTTPException(400, "variant must be A or B")
+    if variant not in ("A", "B", "C"):
+        raise HTTPException(400, "variant must be A, B or C")
     aval_id = str(uuid.uuid4())
-    node_id = f"avalcandidatura-{aval_id}" if variant == "B" else None
+    node_id = f"avalcandidatura-{aval_id}" if variant in ("B", "C") else None
     data = body.model_dump()
-    data["circunscripción"] = data.pop("circunscripcion")
     xml = avalxml.build_unsigned(data, node_id)
     ok, errors = avalxml.schema_validate(xml)
     if not ok:
