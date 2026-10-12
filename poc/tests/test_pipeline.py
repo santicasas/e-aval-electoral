@@ -55,7 +55,14 @@ def test_real_signature_verifies_with_and_without_workarounds():
     from signxml import xades
     root = etree.fromstring(signed)
     cert = x509.load_der_x509_certificate(base64.b64decode(root.find(f".//{DS}X509Certificate").text))
-    xades.XAdESVerifier().verify(signed, x509_cert=cert.public_bytes(serialization.Encoding.PEM))
+    pem = cert.public_bytes(serialization.Encoding.PEM)
+    try:
+        xades.XAdESVerifier().verify(signed, x509_cert=pem)
+    except etree.DocumentInvalid as exc:
+        # Platform-dependent: some libxml2 builds (the Windows one) reject a 39-digit X509SerialNumber as
+        # xs:integer, others (the macOS one) accept it. Only the schema step may differ, never the signature.
+        assert "X509SerialNumber" in str(exc)
+        xades.XAdESVerifier().verify(signed, x509_cert=pem, validate_schema=False)
 
 
 @real

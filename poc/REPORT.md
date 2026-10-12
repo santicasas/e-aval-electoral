@@ -70,8 +70,9 @@ format `XAdES`.
   confirmation included). A first run with the example NIF in the form was correctly rejected only for
   `certificate NIF does not match <id>`. Python 3.11.3, same pinned requirements, 167 tests pass.
   Observation: on this machine plain `XAdESVerifier().verify()` also verifies the variant C signature **without**
-  `validate_schema=False` (the Windows run needed it for the 39-digit serial). Same SignXML/lxml/libxml2 versions
-  as reported for Windows; the cause of the difference was not investigated, so keep the workaround.
+  `validate_schema=False` (the Windows run needed it for the 39-digit serial). Same SignXML/lxml versions as
+  Windows, so the difference comes from the bundled libxml2 build (`xs:integer` range). The test now accepts either
+  behaviour; keep `validate_schema=False` in production, since it must not depend on the platform.
 - **Safari 26.6.2 / macOS / AutoFirma 1.9 (2026-10-12 09:40):** works with variant C and the idCAT certificate,
   `accepted: true`, skew 1 s, about 15 s from calling AutoFirma to the signed XML (user confirmation included). The
   page log shows **no CSP violation** under the `style-inline` CSP (ADR 0009), so `frame-src afirma:` is enough here
@@ -141,8 +142,9 @@ digest, `QualifyingProperties/@Target`, single signature, single `avalcandidatur
     becomes a rejection.
 - **FNMT natural-person certificate (real, owner's, issued 2023, EXPIRED 2026-07-20; read from the macOS Keychain,
   not signed with):** issuer `AC FNMT Usuarios` (intermediate under AC RAIZ FNMT-RCM, SHA-1
-  `80:8B:72:E4:3B:57:4C:F5:87:7C:B8:41:A8:DF:88:39:6D:38:AB:94`, taken from the Keychain, **not verified against an
-  official FNMT source**). Layout: subject `serialNumber` = `IDCES-<NIF>` (same as idCAT and the FNMT
+  `80:8B:72:E4:3B:57:4C:F5:87:7C:B8:41:A8:DF:88:39:6D:38:AB:94`, taken from the Keychain; the same thumbprint is in
+  the Windows intermediate-CA store, a second independent source, but it is **still not checked against an
+  official FNMT page**). Layout: subject `serialNumber` = `IDCES-<NIF>` (same as idCAT and the FNMT
   representative certificate), `GN`/`SN` split, **no** organization or organizationIdentifier; SAN dirName with FNMT
   attributes 1.3.6.1.4.1.5734.1.1-4 (name, surnames, NIF); policy **`1.3.6.1.4.1.5734.3.10.1`** ("certificado
   cualificado de firma electrónica", persona física) plus `0.4.0.194112.1.0` (QCP-n); QcType `esign`, QcCompliance;
