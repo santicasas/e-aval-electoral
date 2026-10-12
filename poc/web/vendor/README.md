@@ -6,3 +6,6 @@ Origin: https://github.com/ctt-gob-es/clienteafirma, path
 Licence: the upstream project is dual-licensed (GPLv2 / EUPL v1.1). Compatibility with the platform licence
 (ADR 0007) must be reviewed before the production release. Vendored so that aval pages load no third-party
 script at runtime.
+
+`autoscript.debug.js` — the same file with ONE added line in `openUrl` that logs the `afirma://` URL it opens. Debug
+aid for the mobile PoC, used only by `debug.html`; never part of a production page.

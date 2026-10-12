@@ -10,7 +10,7 @@ function log(msg) {
 for (const level of ["log", "warn", "error"]) {
   const original = console[level].bind(console);
   console[level] = (...args) => {
-    log("console." + level + ": " + args.map(String).join(" ").slice(0, 600));
+    log("console." + level + ": " + args.map(String).join(" ").slice(0, 4000));
     original(...args);
   };
 }
