@@ -1,6 +1,6 @@
 # PoC report — Phase 0 (DRAFT, day 1 results)
 
-Date: 2026-10-12. Status: **items 1 (Chrome/Windows, Firefox/Windows, Chrome/macOS), 2, 3 (idCAT only), 4, 7 done; Safari/macOS, Firefox/macOS,
+Date: 2026-10-12. Status: **items 1 (Chrome/Windows, Firefox/Windows, Chrome and Safari/macOS), 2, 3 (idCAT only), 4, 7 done; Firefox/macOS,
 other issuers and mobile pending.** No recommendation is final until the pending items are in. The decision between
 continuing with Python or switching approach is the owner's.
 
@@ -12,7 +12,7 @@ certificate (issuer EC-Ciutadania, from the Windows store). No DNIe or FNMT avai
 
 | # | Item | Result |
 |---|------|--------|
-| 1 | Static page + AutoFirma, XAdES enveloped over `avalcandidatura`, strict CSP | **Works on Chrome/Windows, Firefox/Windows and Chrome/macOS** with 1 CSP finding. Safari and Firefox on macOS pending |
+| 1 | Static page + AutoFirma, XAdES enveloped over `avalcandidatura`, strict CSP | **Works on Chrome/Windows, Firefox/Windows, Chrome/macOS and Safari/macOS** with 1 CSP finding. Firefox on macOS pending |
 | 2 | XAdES verification in Python | **Works with 2 workarounds** (library incompatibilities, below) |
 | 3 | Certificate validation | **Works** for idCAT: chain to EC-ACC, live OCSP (`require` mode), policy, QcType, NIF. Rejections tested with synthetic certs. NIF for DNIe/FNMT **unverified** |
 | 4 | Integrity of the node | **Works** (byte-identical canonical form of the node; signed-node == stored-node) |
@@ -72,6 +72,11 @@ format `XAdES`.
   Observation: on this machine plain `XAdESVerifier().verify()` also verifies the variant C signature **without**
   `validate_schema=False` (the Windows run needed it for the 39-digit serial). Same SignXML/lxml/libxml2 versions
   as reported for Windows; the cause of the difference was not investigated, so keep the workaround.
+- **Safari 26.6.2 / macOS / AutoFirma 1.9 (2026-10-12 09:40):** works with variant C and the idCAT certificate,
+  `accepted: true`, skew 1 s, about 15 s from calling AutoFirma to the signed XML (user confirmation included). The
+  page log shows **no CSP violation** under the `style-inline` CSP (ADR 0009), so `frame-src afirma:` is enough here
+  too. Not verified: whether Safari used the WebSocket or the intermediate-server path (the page log does not say; the
+  flow worked either way, and the signed XML came back in the same page).
 - **CSP options for styles** (**decided 2026-10-12: option (a), ADR 0009**): (a) `style-src 'self' 'unsafe-inline'` on the signature
   page only: the risk is low while `script-src 'self'` holds and there is no inline script; (b) patch the vendored
   script (nonce on the injected style, class instead of the style attribute) at the cost of maintaining a fork;
@@ -161,8 +166,7 @@ example uses SHA-1 (acceptance of SHA-256/512 by the Oficina del Censo unverifie
 
 ## Pending
 
-- Safari and Firefox on macOS (Chrome/macOS done): signature flow, WebSocket certificate trust, `frame-src afirma:`.
-  Firefox on macOS may read certificates from its own NSS store rather than the Keychain.
+- Firefox on macOS (Chrome and Safari done): signature flow. It may read certificates from its own NSS store rather than the Keychain.
 - Verify the production CSP decision about `style-src` (above).
 - DNIe and FNMT natural person: NIF extraction and policy OIDs (needs certificates). The owner's Mac Keychain holds
   an FNMT natural-person certificate that has **expired**: usable for the layout/OID and as a real expired case.
