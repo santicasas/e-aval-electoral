@@ -20,6 +20,11 @@ async function loadConstituencies() {
     o.textContent = c;
     sel.appendChild(o);
   }
+  const d = await (await fetch("/api/defaults")).json();
+  for (const [k, v] of Object.entries(d)) {
+    const field = document.getElementById("f").elements[k];
+    if (field) field.value = v;
+  }
 }
 
 function sign(xmlB64, params) {

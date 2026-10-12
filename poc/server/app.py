@@ -83,6 +83,22 @@ def sign_params(variant: str, node_id: str | None) -> str:
     )
 
 
+EXAMPLE_DEFAULTS = {
+    "nomb": "Test", "ape1": "Example", "ape2": "Person", "fnac": "19800101", "tipoid": "1",
+    "id": "00000000T", "elecciones": "CONGRESO Y SENADO", "circunscripcion": "Barcelona",
+    "nombre": "Example Candidacy",
+}
+
+
+@app.get("/api/defaults")
+def defaults():
+    """Form pre-fill: poc/private/defaults.json (git-ignored, see tools/make_defaults.py) or fake examples."""
+    import json
+
+    path = PRIVATE / "defaults.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else EXAMPLE_DEFAULTS
+
+
 @app.get("/api/circunscripciones")
 def circunscripciones():
     import re
