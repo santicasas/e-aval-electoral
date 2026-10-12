@@ -31,11 +31,16 @@ XADES = "{http://uri.etsi.org/01903/v1.3.2#}"
 MAX_BYTES = 256 * 1024
 
 # --- Issuer profiles (the curated list, PoC version). Only idCAT is verified with a real certificate. ---
+# CN of the issuing CA -> accepted natural-person policy OIDs and where the NIF lives (subject serialNumber).
+# Each profile was derived from ONE real certificate of the owner; DNIe has no profile yet (no certificate).
 PROFILES = {
     "EC-Ciutadania": {
-        # CN of the issuing CA -> accepted natural-person policy OIDs and where the NIF lives.
-        "policies": {"1.3.6.1.4.1.15096.1.3.2.86.2"},  # "idCAT Certificat" (seen in the owner's certificate)
-        "nif_regex": re.compile(r"^IDCES-([0-9A-Z]{9})$"),  # subject serialNumber
+        "policies": {"1.3.6.1.4.1.15096.1.3.2.86.2"},  # "idCAT Certificat"
+        "nif_regex": re.compile(r"^IDCES-([0-9A-Z]{9})$"),
+    },
+    "AC FNMT Usuarios": {
+        "policies": {"1.3.6.1.4.1.5734.3.10.1"},  # FNMT qualified signature certificate, natural person
+        "nif_regex": re.compile(r"^IDCES-([0-9A-Z]{9})$"),
     },
 }
 QC_STATEMENTS_OID = "1.3.6.1.5.5.7.1.3"

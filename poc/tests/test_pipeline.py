@@ -175,6 +175,43 @@ def test_unknown_issuer_rejected(pki):
         checks.PROFILES.update(saved)
 
 
+# ---- AC FNMT Usuarios (profile derived from one real, expired certificate of the owner) ---------------------
+
+FNMT_POLICY = "1.3.6.1.4.1.5734.3.10.1"
+
+
+def test_fnmt_usuarios_in_trust_and_chains_to_fnmt_root():
+    roots, inters = checks._load_trust()
+    inter = next(c for c in inters if c.subject.native["common_name"] == "AC FNMT Usuarios")
+    root = next(c for c in roots if c.subject.native["organizational_unit_name"] == "AC RAIZ FNMT-RCM")
+    assert inter.issuer == root.subject and inter.ca
+    assert "AC FNMT Usuarios" in checks.PROFILES
+    # signature of the intermediate verifies with the root's key
+    x509.load_der_x509_certificate(inter.dump()).verify_directly_issued_by(
+        x509.load_der_x509_certificate(root.dump()))
+
+
+@pytest.fixture(scope="module")
+def pki_fnmt():
+    return synth.make_pki(inter_cn="AC FNMT Usuarios")
+
+
+def test_fnmt_usuarios_synthetic_natural_person_accepted(pki_fnmt):
+    root, inter, inter_key, _ = pki_fnmt
+    ee = synth.make_ee(inter, inter_key, "valid", policy=FNMT_POLICY)
+    cls = checks.classify_certificate(ee)
+    assert cls["known_profile"] and not cls["problems"], cls
+    assert cls["nif"] == "00000000T"
+
+
+def test_fnmt_usuarios_rejects_other_policy_and_representative_attributes(pki_fnmt):
+    root, inter, inter_key, _ = pki_fnmt
+    other = checks.classify_certificate(synth.make_ee(inter, inter_key, "valid"))  # idCAT policy, FNMT issuer
+    assert any("policy" in p for p in other["problems"]), other
+    rep = checks.classify_certificate(synth.make_ee(inter, inter_key, "legal_person", policy=FNMT_POLICY))
+    assert any("legal person" in p for p in rep["problems"]), rep
+
+
 # ---- real representative certificate (FNMT) -----------------------------------------------------------------
 
 def _signed_by(issuer_cn):
@@ -193,7 +230,7 @@ def test_real_fnmt_representative_rejected_even_if_issuer_were_admitted():
     if cert is None:
         pytest.skip("needs a signature made with an FNMT representative certificate")
     import re
-    checks.PROFILES["AC Representación"] = {"policies": {"1.3.6.1.4.1.5734.3.10.1"},  # hypothetical natural-person OID
+    checks.PROFILES["AC Representación"] = {"policies": {"1.3.6.1.4.1.5734.3.10.1"},  # the natural-person OID (seen in a real AC FNMT Usuarios cert)
                                             "nif_regex": re.compile(r"^IDCES-([0-9A-Z]{9})$")}
     try:
         cls = checks.classify_certificate(cert)

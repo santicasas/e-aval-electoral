@@ -148,9 +148,10 @@ digest, `QualifyingProperties/@Target`, single signature, single `avalcandidatur
   cualificado de firma electrónica", persona física) plus `0.4.0.194112.1.0` (QCP-n); QcType `esign`, QcCompliance;
   keyUsage digitalSignature + nonRepudiation + keyEncipherment; OCSP `ocspusu.cert.fnmt.es`. With a temporary
   profile (policy above, same NIF regex) `classify_certificate` accepts the profile and extracts the NIF, and
-  `check_certificate` against FNMT root + intermediate rejects it with `ExpiredError` (a real expired case). **Not
-  yet in `PROFILES` or `trust/`**: one certificate is evidence for the layout, not for the whole issuer; DNIe stays
-  unverified. Not tested: an actual signature with it (AutoFirma may hide expired certificates).
+  `check_certificate` against FNMT root + intermediate rejects it with `ExpiredError` (a real expired case). The profile
+  and the intermediate are now in `PROFILES` / `trust/intermediates/ac-fnmt-usuarios.crt` (tests added), but the
+  **intermediate's fingerprint is still unchecked against an official FNMT source**, and one certificate is evidence
+  for the layout, not for the whole issuer; DNIe stays unverified. Not tested: an actual signature with it (AutoFirma may hide expired certificates).
 - Rejections verified with synthetic certificates (`poc/tests`): expired, revoked (CRL), seal (QcType `eseal` and
   organizationIdentifier), legal person / representative (organization attributes), unaccepted policy, missing
   nonRepudiation, no revocation endpoint, unknown issuer. Real revoked/expired certificates were not tested.
@@ -184,7 +185,7 @@ example uses SHA-1 (acceptance of SHA-256/512 by the Oficina del Censo unverifie
   an FNMT natural-person certificate that has **expired**: usable for the layout/OID and as a real expired case.
 - Mobile storage/retrieve servers (optional, not attempted).
 - Docker/VPS resource test.
-- Check the curated roots' fingerprints against official sources; verify the idCAT root fetched over HTTP.
+- Check the curated roots' and intermediates' fingerprints (incl. AC FNMT Usuarios, taken from the Mac Keychain) against official sources; verify the idCAT root fetched over HTTP.
 
 ## Preliminary recommendation (not a decision)
 

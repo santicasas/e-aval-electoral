@@ -42,7 +42,7 @@ def _name(cn, **extra):
     return x509.Name(attrs + extra.get("attrs", []))
 
 
-def make_pki():
+def make_pki(inter_cn="EC-Ciutadania"):
     root_key, inter_key = _key(), _key()
     root_name = _name("Synthetic Root")
     root = (x509.CertificateBuilder().subject_name(root_name).issuer_name(root_name)
@@ -50,7 +50,7 @@ def make_pki():
             .not_valid_before(NOW - dt.timedelta(days=3650)).not_valid_after(NOW + dt.timedelta(days=3650))
             .add_extension(x509.BasicConstraints(ca=True, path_length=1), critical=True)
             .sign(root_key, hashes.SHA256()))
-    inter_name = _name("EC-Ciutadania")  # same CN as the real issuer so the PoC profile applies
+    inter_name = _name(inter_cn)  # same CN as the real issuer so the PoC profile applies
     inter = (x509.CertificateBuilder().subject_name(inter_name).issuer_name(root_name)
              .public_key(inter_key.public_key()).serial_number(x509.random_serial_number())
              .not_valid_before(NOW - dt.timedelta(days=3000)).not_valid_after(NOW + dt.timedelta(days=3000))
@@ -61,11 +61,11 @@ def make_pki():
     return root, inter, inter_key, root_key
 
 
-def make_ee(inter, inter_key, kind="valid", nif="00000000T"):
+def make_ee(inter, inter_key, kind="valid", nif="00000000T", policy=POLICY):
     key = _key()
     attrs = [x509.NameAttribute(NameOID.SERIAL_NUMBER, f"IDCES-{nif}"),
              x509.NameAttribute(NameOID.GIVEN_NAME, "TEST"), x509.NameAttribute(NameOID.SURNAME, "PERSON")]
-    qc_last, policy, cc = 1, POLICY, True
+    qc_last, cc = 1, True
     not_after = NOW + dt.timedelta(days=365)
     not_before = NOW - dt.timedelta(days=10)
     if kind == "expired":
