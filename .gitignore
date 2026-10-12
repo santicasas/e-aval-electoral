@@ -1,0 +1,35 @@
+# Real certificates and keys must NEVER enter the repository.
+*.p12
+*.pfx
+*.pem
+*.key
+*.cer
+*.crt
+*.der
+*.jks
+*.keystore
+
+# Secrets and local config
+.env
+.env.*
+!.env.example
+secrets/
+local/
+
+# Real signed avals / personal data used during the PoC
+poc/private/
+*.signed.xml
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
