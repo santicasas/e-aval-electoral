@@ -1,7 +1,7 @@
 # PoC report — Phase 0 (DRAFT, day 1 results)
 
-Date: 2026-10-12. Status: **items 1 (Chrome/Windows), 2, 3 (idCAT only), 4, 7 done; Firefox/Safari/macOS, other
-issuers and mobile pending.** No recommendation is final until the pending items are in. The decision between
+Date: 2026-10-12. Status: **items 1 (Chrome/Windows, Firefox/Windows, Chrome/macOS), 2, 3 (idCAT only), 4, 7 done; Safari/macOS, Firefox/macOS,
+other issuers and mobile pending.** No recommendation is final until the pending items are in. The decision between
 continuing with Python or switching approach is the owner's.
 
 Environment: Windows 11, Chrome 154, AutoFirma latest (AutoScript 1.10.1), Python 3.14.2, SignXML 5.1.0,
@@ -12,7 +12,7 @@ certificate (issuer EC-Ciutadania, from the Windows store). No DNIe or FNMT avai
 
 | # | Item | Result |
 |---|------|--------|
-| 1 | Static page + AutoFirma, XAdES enveloped over `avalcandidatura`, strict CSP | **Works on Chrome/Windows** with 1 CSP finding. Firefox, Safari, macOS pending |
+| 1 | Static page + AutoFirma, XAdES enveloped over `avalcandidatura`, strict CSP | **Works on Chrome/Windows, Firefox/Windows and Chrome/macOS** with 1 CSP finding. Safari and Firefox on macOS pending |
 | 2 | XAdES verification in Python | **Works with 2 workarounds** (library incompatibilities, below) |
 | 3 | Certificate validation | **Works** for idCAT: chain to EC-ACC, live OCSP (`require` mode), policy, QcType, NIF. Rejections tested with synthetic certs. NIF for DNIe/FNMT **unverified** |
 | 4 | Integrity of the node | **Works** (byte-identical canonical form of the node; signed-node == stored-node) |
@@ -63,6 +63,15 @@ format `XAdES`.
   `frame-src afirma:` is sufficient.** Two CSP violations, both from AutoScript, neither blocking the flow:
   `style-src-elem` (injected `<style>` for the dialogs) and `style-src-attr` (the hidden iframe's `style`
   attribute). Chrome shows only the first.
+- **Chrome 154 / macOS (Darwin 25.6) / AutoFirma 1.9 (2026-10-12 09:37):** works with variant C and the idCAT
+  certificate from the login Keychain. AutoScript 1.10.1 (vendored) talked to AutoFirma 1.9 without problems, so
+  the two versions are compatible. Server verdict `accepted: true` (integrity, schema, signature, XAdES, chain with
+  live OCSP, profile, NIF); signing time skew 0 s; about 13 s from calling AutoFirma to the signed XML (user
+  confirmation included). A first run with the example NIF in the form was correctly rejected only for
+  `certificate NIF does not match <id>`. Python 3.11.3, same pinned requirements, 167 tests pass.
+  Observation: on this machine plain `XAdESVerifier().verify()` also verifies the variant C signature **without**
+  `validate_schema=False` (the Windows run needed it for the 39-digit serial). Same SignXML/lxml/libxml2 versions
+  as reported for Windows; the cause of the difference was not investigated, so keep the workaround.
 - **CSP options for styles** (**decided 2026-10-12: option (a), ADR 0009**): (a) `style-src 'self' 'unsafe-inline'` on the signature
   page only: the risk is low while `script-src 'self'` holds and there is no inline script; (b) patch the vendored
   script (nonce on the injected style, class instead of the style attribute) at the cost of maintaining a fork;
@@ -152,9 +161,11 @@ example uses SHA-1 (acceptance of SHA-256/512 by the Oficina del Censo unverifie
 
 ## Pending
 
-- Chrome, Firefox and Safari on macOS: signature flow, WebSocket certificate trust (day 2). Firefox/Windows done.
+- Safari and Firefox on macOS (Chrome/macOS done): signature flow, WebSocket certificate trust, `frame-src afirma:`.
+  Firefox on macOS may read certificates from its own NSS store rather than the Keychain.
 - Verify the production CSP decision about `style-src` (above).
-- DNIe and FNMT natural person: NIF extraction and policy OIDs (needs certificates).
+- DNIe and FNMT natural person: NIF extraction and policy OIDs (needs certificates). The owner's Mac Keychain holds
+  an FNMT natural-person certificate that has **expired**: usable for the layout/OID and as a real expired case.
 - Mobile storage/retrieve servers (optional, not attempted).
 - Docker/VPS resource test.
 - Check the curated roots' fingerprints against official sources; verify the idCAT root fetched over HTTP.

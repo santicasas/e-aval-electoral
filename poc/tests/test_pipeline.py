@@ -23,7 +23,8 @@ import synth  # noqa: E402
 from server import avalxml, checks  # noqa: E402
 from server.checks import DS, XADES  # noqa: E402
 
-SIGNED = sorted(glob.glob(str(POC / "private" / "signed" / "*.signed.xml")))
+# Newest first: the signed files are named by random id, and older ones may carry other test data.
+SIGNED = sorted(glob.glob(str(POC / "private" / "signed" / "*.signed.xml")), key=lambda p: -Path(p).stat().st_mtime)
 real = pytest.mark.skipif(not SIGNED, reason="needs a real AutoFirma-signed aval in poc/private/signed/")
 
 
@@ -45,8 +46,8 @@ def load_signed():
 # ---- real signature -------------------------------------------------------------------------------------------
 
 @real
-def test_real_signature_signxml_workarounds_needed():
-    """Documents the two library incompatibilities: plain SignXML must fail, the workarounds must pass."""
+def test_real_signature_verifies_with_and_without_workarounds():
+    """Variant C output (single C14N transform, SHA-256) verifies with plain SignXML as well as with our checks."""
     signed = load_signed()
     res, _ = checks.check_signature(signed, b"")
     assert res["ok"], res
@@ -54,8 +55,7 @@ def test_real_signature_signxml_workarounds_needed():
     from signxml import xades
     root = etree.fromstring(signed)
     cert = x509.load_der_x509_certificate(base64.b64decode(root.find(f".//{DS}X509Certificate").text))
-    with pytest.raises(Exception):
-        xades.XAdESVerifier().verify(signed, x509_cert=cert.public_bytes(serialization.Encoding.PEM))
+    xades.XAdESVerifier().verify(signed, x509_cert=cert.public_bytes(serialization.Encoding.PEM))
 
 
 @real
