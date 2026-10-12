@@ -10,8 +10,8 @@ verified by the project owner.** It must not move to `spec/` until the owner che
 
 ## Findings from the images
 1. **BOE inconsistency (needs owner decision):** the XSD declares the element `circunscripcion`
-   (no accent), but both example XMLs show `<circunscripción />` (with accent). The draft follows the XSD; the
-   official validator's behaviour is unknown.
+   (no accent), but both example XMLs show `<circunscripción />` (with accent). **Owner decision (2026-10-12): use the accented
+   `circunscripción`**, as in the example XML. The official validator's behaviour is unverified.
 2. **`PARLAMENTO EUROPEO`** is a fourth value of `tipoelecciones` (the project brief listed three). The list
    also ends with `Circunscripción Nacional` (European Parliament constituency).
 3. The list has 63 values: 50 provinces, Ceuta, Melilla, 10 islands (Mallorca, Menorca, Ibiza-Formentera,

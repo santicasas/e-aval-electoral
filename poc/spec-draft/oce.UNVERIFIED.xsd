@@ -5,7 +5,7 @@
           (https://www.boe.es/datos/imagenes/disp/2011/224/14814_003.png etc.).
   Transcribed by Claude from the 720px-wide PNGs on 2026-10-12. Not yet checked by the project owner.
   Promotion to spec/ requires owner verification (see README.md in this directory).
-  Known discrepancy with the BOE example XML: see README.md (circunscripcion vs circunscripción).
+  OWNER DECISION 2026-10-12: element named circunscripción (with accent, as in the BOE example XML) although the BOE XSD image reads circunscripcion. See README.md.
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
 	<xs:element name="oce">
@@ -34,7 +34,7 @@
 	<xs:complexType name="candidaturaType">
 		<xs:sequence>
 			<xs:element name="elecciones" type="tipoelecciones"/>
-			<xs:element name="circunscripcion" type="circunscripcionINE"/>
+			<xs:element name="circunscripción" type="circunscripcionINE"/>
 			<xs:element name="nombre" type="nombcandidatura"/>
 		</xs:sequence>
 	</xs:complexType>

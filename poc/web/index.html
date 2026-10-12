@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PoC aval signature</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h1>PoC: AutoFirma XAdES enveloped signature</h1>
+    <p class="warn">Throwaway Phase 0 page. Use only your own data.</p>
+    <form id="f" autocomplete="off">
+      <label>Name (nomb, max 20) <input name="nomb" required maxlength="20"></label>
+      <label>Surname 1 (ape1, max 25) <input name="ape1" required maxlength="25"></label>
+      <label>Surname 2 (ape2, max 25) <input name="ape2" maxlength="25"></label>
+      <label>Birth date (AAAAMMDD) <input name="fnac" required pattern="[0-9]{8}" maxlength="8"></label>
+      <label>ID type
+        <select name="tipoid"><option value="1">1 - NIF</option><option value="2">2 - NIE</option></select>
+      </label>
+      <label>ID number <input name="id" required maxlength="9"></label>
+      <label>Elections
+        <select name="elecciones">
+          <option>CONGRESO</option><option>SENADO</option><option selected>CONGRESO Y SENADO</option>
+        </select>
+      </label>
+      <label>Constituency <select name="circunscripcion" id="circ"></select></label>
+      <label>Candidacy name (max 100) <input name="nombre" required maxlength="100" value="Example Candidacy"></label>
+      <label>Parameter variant
+        <select name="variant">
+          <option value="A">A: nodeToSign=avalcandidatura (no Id from server)</option>
+          <option value="B">B: server Id on node, nodeToSign=Id</option>
+        </select>
+      </label>
+      <button type="submit">Generate and sign with AutoFirma</button>
+    </form>
+    <h2>Log</h2>
+    <pre id="log" aria-live="polite"></pre>
+  </main>
+  <script src="vendor/autoscript.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
