@@ -17,7 +17,7 @@ certificate (issuer EC-Ciutadania, from the Windows store). No DNIe or FNMT avai
 | 3 | Certificate validation | **Works** for idCAT: chain to EC-ACC, live OCSP (`require` mode), policy, QcType, NIF. Rejections tested with synthetic certs. NIF for DNIe/FNMT **unverified** |
 | 4 | Integrity of the node | **Works** (byte-identical canonical form of the node; signed-node == stored-node) |
 | 5 | Real certificates | idCAT (accepted) and FNMT representative (rejected as expected). DNIe and FNMT natural person: none |
-| 6 | Mobile | Not attempted (optional) |
+| 6 | Mobile | **Attempted on iPhone; does not work without a three-phase signature server** (see section 6). Out of scope for 29N |
 | 7 | Resources | Negligible CPU; no Docker on this machine, no VPS test |
 
 ## 1. Signature from the static page
@@ -165,6 +165,38 @@ must be identical to the stored one, and the node covered by the signature must 
 `id`, candidacy name or constituency, adding a second node, removing the signature and XML entities are all
 rejected in tests.
 
+## 6. Mobile (iPhone, 2026-10-12)
+
+Setup: iPhone (iOS 18.7, Safari 26.6.1), App Store «Autofirma App» with the owner's idCAT certificate imported as
+PKCS#12, the PoC served over the owner's Tailscale network with a Let's Encrypt certificate issued by
+`tailscale cert` (no CA to install on the phone; the host name is in the public CT logs). The phone reached the
+PoC, loaded the page and talked to our storage/retrieve services. Python reimplementation of the official
+storage/retrieve servlets (`poc/server/intermediate.py`, 22 tests) is in place.
+
+What was learned, in order:
+1. **The iOS app rejects the direct form of the request.** AutoScript puts the operation data (the XML with the
+   signer's name and NIF, base64, not encrypted) inside the `afirma://` URL when the URL is under 2000
+   characters; the app answered «ha llegado el id de fichero pero no ha llegado la url del servidor de descarga».
+   Forcing the upload form (data uploaded encrypted to the storage service; URL carries only `fileid`, `rid`,
+   `rtservlet`, `stservlet`, key and cipher) requires lowering `MAX_LONG_GENERAL_URL` in the vendored
+   `autoscript.js` (debug copy: 1000; 0 breaks it, the check is applied twice). The upload form is also better
+   for privacy (no personal data in a URL). A patched copy would have to be maintained in production.
+2. **With the upload form the app downloads the operation, then calls a three-phase signature server.** It does
+   `POST <origin>/afirma-server-triphase-signer/SignatureService` (form-urlencoded, URL-safe base64):
+   `op=pre`, `cop=sign`, `format=XAdES`, `algo=SHA256withRSA`, `cert` (signer certificate), `params` (our extra
+   parameters), `doc` (the XML to sign). Without that service the app fails with «Error HTTP al realizar la
+   operación de prefirma». So **on iOS XAdES is signed in three phases** (server pre-sign, local signature with the
+   private key, server post-sign); the storage and retrieve services alone are not enough.
+3. After the app fails, returning to Safari by hand lets the page resume polling and receive the app's error, so
+   the feared iOS suspension of the page did not block the flow.
+
+Consequences: a mobile signature needs the three-phase service (the official one, Java, as a closed container, or
+a Python reimplementation: building the XAdES pre-sign data and the final signature, roughly one to two days plus
+tests) and the patched AutoScript. In that flow the server sees the document and the certificate (not
+end-to-end encrypted). **Mobile is out of scope for the 29N**; it is a later phase (ADR 0001 already provides the
+abstract signature layer for it). The recorded request is in `poc/private/triphase-requests.log`
+(git-ignored: contains the test XML and the owner's public certificate).
+
 ## 7. Resources
 
 Per aval, the crypto checks (integrity, schema, signature, XAdES, profile) cost about 2.4 ms CPU; the OCSP call
@@ -185,7 +217,7 @@ example uses SHA-1 (acceptance of SHA-256/512 by the Oficina del Censo unverifie
 - Verify the production CSP decision about `style-src` (above).
 - DNIe and FNMT natural person: NIF extraction and policy OIDs (needs certificates). The owner's Mac Keychain holds
   an FNMT natural-person certificate that has **expired**: usable for the layout/OID and as a real expired case.
-- Mobile storage/retrieve servers (optional, not attempted).
+- Mobile: done to the limit of what the storage/retrieve servers allow; the next step is the three-phase service (later phase).
 - Docker/VPS resource test.
 - Check the curated roots' and intermediates' fingerprints (incl. AC FNMT Usuarios, taken from the Mac Keychain) against official sources; verify the idCAT root fetched over HTTP.
 
