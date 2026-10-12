@@ -1,6 +1,9 @@
 """Delivery ZIPs: one per election, constituency and candidacy, named ``EEEEEE.CCCCCC.PPPPPP.zip``, containing
 one ``NIF.xml`` per aval.
 
+Encoding: the accents and spaces live in the ZIP *file name* (a file-system name, kept in NFC), not inside the
+archive; the entries are plain ASCII (``NIF.xml``), so there is no code-page ambiguity in the archive.
+
 Open point (BOE silent): several official values contain ``/`` (``Araba/Álava``...), which cannot be part of a
 file name. ``Options.path_replacements`` is the configurable substitution (provisionally ``-``); the choice must
 be confirmed with the Junta. The XML values are never altered: only the ZIP name is.
@@ -19,7 +22,6 @@ from .schema import Spec, load_spec
 
 ZIP_NAME_MAX_BYTES = 255  # common file-system limit, in UTF-8 bytes
 _FIXED_TIME = (1980, 1, 1, 0, 0, 0)  # reproducible archives
-_UTF8_FLAG = 0x800  # general-purpose bit 11: entry names are UTF-8
 
 
 def safe_component(value: str, options: Options) -> tuple[str, list[Notice]]:
@@ -88,6 +90,5 @@ def build_zip(avals: list[SignedAval], elecciones: str, circunscripcion: str, no
             seen.add(nif)
             info = zipfile.ZipInfo(f"{nif}.xml", date_time=_FIXED_TIME)
             info.compress_type = zipfile.ZIP_DEFLATED
-            info.flag_bits |= _UTF8_FLAG
             zf.writestr(info, item.xml)
     return name, buffer.getvalue(), notices

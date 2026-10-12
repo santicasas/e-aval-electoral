@@ -1,4 +1,0 @@
-lxml>=5
-
-[test]
-pytest>=8

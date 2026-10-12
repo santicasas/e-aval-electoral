@@ -13,3 +13,4 @@ One file per decision. Status: Proposed, Accepted, Superseded.
 | 0007 | EUPL-1.2 licence | Proposed (owner to confirm) |
 | 0008 | Frontend served from own host, not GitHub Pages | Accepted |
 | 0009 | Inline styles allowed on the signature page | Accepted |
+| 0010 | Recommended defaults for the open format questions | Accepted (partly unverified) |

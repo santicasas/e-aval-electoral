@@ -1,8 +1,0 @@
-Metadata-Version: 2.4
-Name: eaval
-Version: 0.0.1
-Summary: Core library of e-aval-electoral: aval XML generation, normalisation, validation and delivery ZIPs
-Requires-Python: >=3.11
-Requires-Dist: lxml>=5
-Provides-Extra: test
-Requires-Dist: pytest>=8; extra == "test"
