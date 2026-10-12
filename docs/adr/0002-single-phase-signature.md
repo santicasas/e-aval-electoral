@@ -8,8 +8,13 @@ returns to the backend, which checks integrity, signature, certificate, revocati
 accepting it.
 
 ## Parameters
-`format=XAdES Enveloped`, `nodeToSign=avalcandidatura`, `insertEnvelopedSignatureOnNodeByXPath`, SHA-256 or
-stronger, `includeOnlySignningCertificate=true`.
+Verified in the PoC (2026-10-12, AutoFirma latest, Chrome/Windows): `format=XAdES Enveloped`,
+`nodeToSign=<value of the node's Id attribute>` (the element name fails with `java.lang.Exception`),
+`insertEnvelopedSignatureOnNodeByXPath=/oce`, `includeOnlySignningCertificate=true`,
+`avoidEnvelopedTransformWhenSigningNode=true`, `avoidXpathExtraTransformsOnEnveloped=true`,
+`referencesDigestMethod=http://www.w3.org/2001/04/xmlenc#sha256`; algorithm `SHA256withRSA`. The server
+generates the node `Id` (`avalcandidatura-<uuid>`). Result: a single C14N transform and SHA-256 digests, as in
+the BOE example.
 
 ## Consequences
 The signature layer is abstract so that three-phase signing (official server in a container or a Python
