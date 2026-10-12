@@ -18,6 +18,8 @@ commit messages: English. README: English, Catalan, Spanish.
   candidacy (names, config, contacts, notes, test data, commit messages, issues). Per-candidacy
   configuration lives outside the repo (private deployment config / secrets). Use neutral placeholders
   such as "Example Candidacy" in docs, fixtures and tests.
+  Drafts of emails and consultations, and anything specific to a candidacy, live in `private-docs/`, which is
+  git-ignored (exists only on the machine where it was created; sync it yourself if needed).
 
 ## Phase status
 - **Phase 0 (PoC) is closed.** Report and recommendation: `poc/REPORT.md`. The owner chose **option A: continue with
